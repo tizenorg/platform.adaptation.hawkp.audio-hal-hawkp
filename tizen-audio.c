@@ -29,6 +29,25 @@ static const char* AUDIO_LATENCY_MID  = "mid";
 static const char* AUDIO_LATENCY_HIGH = "high";
 static const char* AUDIO_LATENCY_VOIP = "voip";
 
+
+audio_return_t _audio_mixer_init(audio_hal_t *ah)
+{
+    AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+
+    pthread_mutex_init(&(ah->mixer.mutex), NULL);
+
+    if (_audio_mixer_control_set_value(ah, "hw:0", AMIXER_SPK_OUT_GAIN, AMIXER_SPK_OUT_GAIN_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_SPK_OUT_GAIN, AMIXER_SPK_OUT_GAIN_DEFAULT);
+    if (_audio_mixer_control_set_value(ah, "hw:0", AMIXER_SPK_OUT_MUTE, AMIXER_SPK_OUT_MUTE_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_SPK_OUT_MUTE, AMIXER_SPK_OUT_MUTE_DEFAULT);
+    if (_audio_mixer_control_set_value(ah, "hw:0", AMIXER_PCM_GAIN, AMIXER_PCM_GAIN_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_PCM_GAIN, AMIXER_PCM_GAIN_DEFAULT);
+    if (_audio_mixer_control_set_value(ah, "hw:1", AMIXER_AMP_MUTE, AMIXER_AMP_MUTE_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_AMP_MUTE, AMIXER_AMP_MUTE_DEFAULT);
+
+    return AUDIO_RET_OK;
+}
+
 audio_return_t audio_init (void **audio_handle)
 {
     audio_hal_t *ah;
@@ -55,6 +74,11 @@ audio_return_t audio_init (void **audio_handle)
     }
 #endif
     if (AUDIO_IS_ERROR((ret = _audio_util_init(ah)))) {
+        AUDIO_LOG_ERROR("util init failed");
+        goto error_exit;
+    }
+
+    if (AUDIO_IS_ERROR((ret = _audio_mixer_init(ah)))) {
         AUDIO_LOG_ERROR("mixer init failed");
         goto error_exit;
     }
