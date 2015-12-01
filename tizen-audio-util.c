@@ -79,11 +79,11 @@ audio_return_t audio_mixer_control_get_value(audio_hal_t *ah, const char *ctl_na
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
 
-    audio_ret = _audio_mixer_control_get_value(ah, ctl_name, val);
+    audio_ret = _audio_mixer_control_get_value(ah, ALSA_DEFAULT_CARD, ctl_name, val);
     return audio_ret;
 }
 
-audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *ctl_name, int *val)
+audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *card, const char *ctl_name, int *val)
 {
     snd_ctl_t *handle;
     snd_ctl_elem_value_t *control;
@@ -97,7 +97,7 @@ audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *ctl_n
 
     pthread_mutex_lock(&(ah->mixer.mutex));
 
-    ret = snd_ctl_open(&handle, ALSA_DEFAULT_CARD, 0);
+    ret = snd_ctl_open(&handle, card, 0);
     if (ret < 0) {
         AUDIO_LOG_ERROR ("snd_ctl_open error, %s\n", snd_strerror(ret));
         pthread_mutex_unlock(&(ah->mixer.mutex));
@@ -163,7 +163,7 @@ close:
     return AUDIO_ERR_UNDEFINED;
 }
 
-audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *ctl_name, int val)
+audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *card, const char *ctl_name, int val)
 {
     snd_ctl_t *handle;
     snd_ctl_elem_value_t *control;
@@ -179,7 +179,7 @@ audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *ctl_n
 
     pthread_mutex_lock(&(ah->mixer.mutex));
 
-    ret = snd_ctl_open(&handle, ALSA_DEFAULT_CARD, 0);
+    ret = snd_ctl_open(&handle, card, 0);
     if (ret < 0) {
         AUDIO_LOG_ERROR("snd_ctl_open error, card: %s: %s", card_name, snd_strerror(ret));
         pthread_mutex_unlock(&(ah->mixer.mutex));
