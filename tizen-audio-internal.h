@@ -75,6 +75,16 @@
     } \
 } while (0)
 
+#define AMIXER_SPK_OUT_GAIN "speaker out gain"
+#define AMIXER_SPK_OUT_MUTE "speaker out mute"
+#define AMIXER_PCM_GAIN "pcm main pulse gain"
+#define AMIXER_AMP_MUTE "amp speaker out mute(soft)"
+
+#define AMIXER_SPK_OUT_GAIN_DEFAULT 20
+#define AMIXER_SPK_OUT_MUTE_DEFAULT 0
+#define AMIXER_PCM_GAIN_DEFAULT 100
+#define AMIXER_AMP_MUTE_DEFAULT 0
+
 /* Devices : Normal  */
 enum audio_device_type {
     AUDIO_DEVICE_NONE                 = 0,
@@ -122,6 +132,8 @@ typedef struct device_type {
 #define strneq strcmp
 
 #define ALSA_DEFAULT_CARD       "sdp_scard_audio"
+#define ALSA_CARD0              "hw:0"
+#define ALSA_CARD1              "hw:1"
 #define PLAYBACK_PCM_DEVICE     "hw:0,0"
 #define CAPTURE_PCM_DEVICE      "hw:0,0"
 
@@ -317,9 +329,9 @@ audio_return_t _audio_ucm_reset_use_case(audio_hal_t *ah);
 audio_return_t _audio_util_init(audio_hal_t *ah);
 audio_return_t _audio_util_deinit(audio_hal_t *ah);
 audio_return_t _audio_mixer_control_set_param(audio_hal_t *ah, const char* ctl_name, snd_ctl_elem_value_t* value, int size);
-audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *ctl_name, int val);
+audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *card, const char *ctl_name, int val);
 audio_return_t _audio_mixer_control_set_value_string(audio_hal_t *ah, const char* ctl_name, const char* value);
-audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *ctl_name, int *val);
+audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *card, const char *ctl_name, int *val);
 audio_return_t _audio_mixer_control_get_element(audio_hal_t *ah, const char *ctl_name, snd_hctl_elem_t **elem);
 audio_return_t _audio_pcm_set_sw_params(snd_pcm_t *pcm, snd_pcm_uframes_t avail_min, uint8_t period_event);
 audio_return_t _audio_pcm_set_hw_params(snd_pcm_t *pcm, audio_pcm_sample_spec_t *sample_spec, uint8_t *use_mmap, snd_pcm_uframes_t *period_size, snd_pcm_uframes_t *buffer_size);
