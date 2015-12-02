@@ -129,11 +129,14 @@ static audio_return_t set_devices(audio_hal_t *ah, const char *verb, device_info
         return AUDIO_ERR_PARAMETER;
     }
 
+#ifdef USE_UCM
     audio_ret = _audio_ucm_set_devices(ah, verb, active_devices);
     if (audio_ret) {
         AUDIO_LOG_ERROR("Failed to set device: error = %d", audio_ret);
         return audio_ret;
     }
+#endif
+
     return audio_ret;
 
 }
@@ -266,6 +269,8 @@ audio_return_t audio_do_route(void *audio_handle, audio_route_info_t *info)
     AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
 
     AUDIO_LOG_INFO("role:%s", info->role);
+
+    devices = info->device_infos;
 
     if (!strncmp("voip", info->role, MAX_NAME_LEN)) {
         audio_ret = _do_route_voip(ah, devices, info->num_of_devices);

@@ -301,6 +301,8 @@ audio_return_t _audio_volume_deinit(audio_hal_t *ah);
 audio_return_t _audio_device_init(audio_hal_t *ah);
 audio_return_t _audio_device_deinit(audio_hal_t * ah);
 audio_return_t _audio_ucm_init(audio_hal_t *ah);
+
+#ifdef USE_UCM
 audio_return_t _audio_ucm_deinit(audio_hal_t *ah);
 void _audio_ucm_get_device_name(audio_hal_t *ah, const char *use_case, audio_direction_t direction, const char **value);
 #define _audio_ucm_update_use_case _audio_ucm_set_use_case
@@ -310,6 +312,8 @@ audio_return_t _audio_ucm_set_modifiers(audio_hal_t *ah, const char *verb, const
 int _audio_ucm_fill_device_info_list(audio_hal_t *ah, audio_device_info_t *device_info_list, const char *verb);
 audio_return_t _audio_ucm_get_verb(audio_hal_t *ah, const char **value);
 audio_return_t _audio_ucm_reset_use_case(audio_hal_t *ah);
+#endif
+
 audio_return_t _audio_util_init(audio_hal_t *ah);
 audio_return_t _audio_util_deinit(audio_hal_t *ah);
 audio_return_t _audio_mixer_control_set_param(audio_hal_t *ah, const char* ctl_name, snd_ctl_elem_value_t* value, int size);
