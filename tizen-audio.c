@@ -48,7 +48,7 @@ static audio_return_t _audio_mixer_init(audio_hal_t *ah)
     return AUDIO_RET_OK;
 }
 
-audio_return_t audio_init (void **audio_handle)
+audio_return_t audio_init(void **audio_handle)
 {
     audio_hal_t *ah;
     audio_return_t ret = AUDIO_RET_OK;
@@ -93,7 +93,7 @@ error_exit:
     return ret;
 }
 
-audio_return_t audio_deinit (void *audio_handle)
+audio_return_t audio_deinit(void *audio_handle)
 {
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
 
