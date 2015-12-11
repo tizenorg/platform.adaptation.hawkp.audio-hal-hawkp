@@ -221,6 +221,7 @@ typedef enum audio_volume {
     AUDIO_VOLUME_TYPE_CALL,             /**< Call volume type */
     AUDIO_VOLUME_TYPE_VOIP,             /**< VOIP volume type */
     AUDIO_VOLUME_TYPE_VOICE,            /**< Voice volume type */
+    AUDIO_VOLUME_TYPE_MASTER,           /**< Master volume type */
     AUDIO_VOLUME_TYPE_MAX,              /**< Volume type count */
 } audio_volume_t;
 
