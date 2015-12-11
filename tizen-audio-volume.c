@@ -44,6 +44,7 @@ static const char *g_volume_vconf[AUDIO_VOLUME_TYPE_MAX] = {
     "file/private/sound/volume/call",           /* AUDIO_VOLUME_TYPE_CALL */
     "file/private/sound/volume/voip",           /* AUDIO_VOLUME_TYPE_VOIP */
     "file/private/sound/volume/voice",          /* AUDIO_VOLUME_TYPE_VOICE */
+    "file/private/sound/volume/master",         /* AUDIO_VOLUME_TYPE_MASTER */
 };
 
 static const char *__get_volume_type_string_by_idx(uint32_t vol_type_idx)
@@ -57,6 +58,7 @@ static const char *__get_volume_type_string_by_idx(uint32_t vol_type_idx)
     case AUDIO_VOLUME_TYPE_CALL:            return "call";
     case AUDIO_VOLUME_TYPE_VOIP:            return "voip";
     case AUDIO_VOLUME_TYPE_VOICE:           return "voice";
+    case AUDIO_VOLUME_TYPE_MASTER:          return "master";
     default:                                return "invalid";
     }
 }
@@ -79,6 +81,8 @@ static uint32_t __get_volume_idx_by_string_type(const char *vol_type)
         return AUDIO_VOLUME_TYPE_VOIP;
     else if (!strncmp(vol_type, "voice", strlen(vol_type)) || !strncmp(vol_type, "7", strlen(vol_type)))
         return AUDIO_VOLUME_TYPE_VOICE;
+    else if (!strncmp(vol_type, "master", strlen(vol_type)) || !strncmp(vol_type, "8", strlen(vol_type)))
+        return AUDIO_VOLUME_TYPE_MASTER;
     else
         return AUDIO_VOLUME_TYPE_MEDIA;
 }
@@ -99,6 +103,11 @@ static const char *__get_gain_type_string_by_idx(uint32_t gain_type_idx)
     case AUDIO_GAIN_TYPE_TTS:               return "tts";
     default:                                return "invalid";
     }
+}
+
+static bool __is_only_mixer_ctl_volume_type(const char *vol_type)
+{
+    return (!strncmp(vol_type, "master", strlen(vol_type)) || !strncmp(vol_type, "8", strlen(vol_type)));
 }
 
 static void __dump_tb(audio_hal_t *ah)
@@ -130,6 +139,8 @@ static void __dump_tb(audio_hal_t *ah)
     for (vol_type_idx = 0; vol_type_idx < AUDIO_VOLUME_TYPE_MAX; vol_type_idx++) {
         const char *vol_type_str = __get_volume_type_string_by_idx(vol_type_idx);
 
+        if (__is_only_mixer_ctl_volume_type(vol_type_str))
+            continue;
         dump_str_ptr = &dump_str[0];
         memset(dump_str, 0x00, sizeof(char) * sizeof(dump_str));
         snprintf(dump_str_ptr, 8, "%6s:", vol_type_str);
@@ -197,6 +208,8 @@ static audio_return_t __load_volume_value_table_from_ini(audio_hal_t *ah)
     /* Load volume table */
     for (vol_type_idx = 0; vol_type_idx < AUDIO_VOLUME_TYPE_MAX; vol_type_idx++) {
         const char *vol_type_str = __get_volume_type_string_by_idx(vol_type_idx);
+        if (__is_only_mixer_ctl_volume_type(vol_type_str))
+            continue;
 
         volume_value_table->volume_level_max[vol_type_idx] = 0;
         size = strlen(table_str) + strlen(vol_type_str) + 2;
@@ -257,7 +270,7 @@ audio_return_t _audio_volume_init(audio_hal_t *ah)
     int i;
     int val = 0;
     audio_return_t audio_ret = AUDIO_RET_OK;
-    int init_value[AUDIO_VOLUME_TYPE_MAX] = { 9, 11, 7, 11, 7, 4, 4, 7 };
+    int init_value[AUDIO_VOLUME_TYPE_MAX] = {9, 11, 7, 11, 7, 4, 4, 7, 20};
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
 
@@ -341,6 +354,11 @@ audio_return_t audio_get_volume_value(void *audio_handle, audio_volume_info_t *i
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(ah->volume.volume_value_table, AUDIO_ERR_PARAMETER);
 
+    if (__is_only_mixer_ctl_volume_type(info->type)) {
+        *value = VOLUME_VALUE_MAX;
+        goto end;
+    }
+
     /* Get basic volume by device & type & level */
     volume_value_table = ah->volume.volume_value_table;
     if (volume_value_table->volume_level_max[__get_volume_idx_by_string_type(info->type)] < level)
@@ -349,6 +367,7 @@ audio_return_t audio_get_volume_value(void *audio_handle, audio_volume_info_t *i
         *value = volume_value_table->volume[__get_volume_idx_by_string_type(info->type)][level];
     *value *= volume_value_table->gain[AUDIO_GAIN_TYPE_DEFAULT]; /* need to fix getting gain via audio_info_t */
 
+end:
     AUDIO_LOG_DEBUG("get_volume_value:%d(%s)=>%f %s", level, info->type, *value, &dump_str[0]);
 
     return AUDIO_RET_OK;
@@ -366,6 +385,12 @@ audio_return_t audio_set_volume_level(void *audio_handle, audio_volume_info_t *i
     AUDIO_LOG_INFO("set [%s] volume_level: %d, direction(%d)", info->type, level, info->direction);
 
     /* set mixer related to H/W volume if needed */
+
+    if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
+        if (_audio_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, level) != AUDIO_RET_OK) {
+            AUDIO_LOG_ERROR("set master volume with mixer failed");
+        }
+    }
 
     return audio_ret;
 }
