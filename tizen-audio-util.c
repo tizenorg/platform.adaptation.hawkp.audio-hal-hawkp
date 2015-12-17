@@ -78,6 +78,8 @@ audio_return_t audio_mixer_control_get_value(audio_hal_t *ah, const char *ctl_na
     audio_return_t audio_ret = AUDIO_RET_OK;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(ctl_name, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(val, AUDIO_ERR_PARAMETER);
 
     audio_ret = _audio_mixer_control_get_value(ah, ALSA_DEFAULT_CARD, ctl_name, val);
     return audio_ret;
@@ -94,6 +96,9 @@ audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *card,
     int ret = 0, count = 0, i = 0;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(card, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(ctl_name, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(val, AUDIO_ERR_PARAMETER);
 
     pthread_mutex_lock(&(ah->mixer.mutex));
 
@@ -175,6 +180,7 @@ audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *card,
     int ret = 0, count = 0, i = 0;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(card, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(ctl_name, AUDIO_ERR_PARAMETER);
 
     pthread_mutex_lock(&(ah->mixer.mutex));
