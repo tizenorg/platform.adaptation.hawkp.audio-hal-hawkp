@@ -321,6 +321,8 @@ audio_return_t audio_get_volume_level_max(void *audio_handle, audio_volume_info_
     audio_volume_value_table_t *volume_value_table;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(level, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(ah->volume.volume_value_table, AUDIO_ERR_PARAMETER);
 
     /* Get max volume level by device & type */
@@ -337,6 +339,8 @@ audio_return_t audio_get_volume_level(void *audio_handle, audio_volume_info_t *i
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(level, AUDIO_ERR_PARAMETER);
 
     *level = ah->volume.volume_level[__get_volume_idx_by_string_type(info->type)];
 
@@ -352,6 +356,8 @@ audio_return_t audio_get_volume_value(void *audio_handle, audio_volume_info_t *i
     char dump_str[AUDIO_DUMP_STR_LEN] = {0,};
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(value, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(ah->volume.volume_value_table, AUDIO_ERR_PARAMETER);
 
     if (__is_only_mixer_ctl_volume_type(info->type)) {
@@ -379,6 +385,7 @@ audio_return_t audio_set_volume_level(void *audio_handle, audio_volume_info_t *i
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
 
     /* Update volume level */
     ah->volume.volume_level[__get_volume_idx_by_string_type(info->type)] = level;
@@ -387,7 +394,7 @@ audio_return_t audio_set_volume_level(void *audio_handle, audio_volume_info_t *i
     /* set mixer related to H/W volume if needed */
 
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if (_audio_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, level) != AUDIO_RET_OK) {
+        if ((audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, level)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("set master volume with mixer failed");
         }
     }
@@ -406,7 +413,7 @@ audio_return_t audio_get_volume_mute(void *audio_handle, audio_volume_info_t *in
 
     /* TODO. Not implemented for other than master type */
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if (audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute) != AUDIO_RET_OK) {
+        if ((audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("get master mute with mixer failed");
         }
     }
@@ -424,7 +431,7 @@ audio_return_t audio_set_volume_mute(void *audio_handle, audio_volume_info_t *in
 
     /* TODO. Not implemented for other than master type */
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if (audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute) != AUDIO_RET_OK) {
+        if ((audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("set master mute with mixer failed");
         }
     }
