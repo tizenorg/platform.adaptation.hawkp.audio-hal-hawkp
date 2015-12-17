@@ -401,8 +401,15 @@ audio_return_t audio_get_volume_mute(void *audio_handle, audio_volume_info_t *in
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(mute, AUDIO_ERR_PARAMETER);
 
-    /* TODO. Not implemented */
+    /* TODO. Not implemented for other than master type */
+    if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
+        if ((audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
+            AUDIO_LOG_ERROR("get master mute with mixer failed");
+        }
+    }
 
     return audio_ret;
 }
@@ -413,7 +420,14 @@ audio_return_t audio_set_volume_mute(void *audio_handle, audio_volume_info_t *in
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
-    /* TODO. Not implemented */
+    AUDIO_RETURN_VAL_IF_FAIL(info, AUDIO_ERR_PARAMETER);
+
+    /* TODO. Not implemented for other than master type */
+    if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
+        if ((audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
+            AUDIO_LOG_ERROR("set master mute with mixer failed");
+        }
+    }
 
     return audio_ret;
 }
