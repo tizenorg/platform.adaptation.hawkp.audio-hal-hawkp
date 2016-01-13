@@ -67,12 +67,6 @@ audio_return_t audio_init(void **audio_handle)
         AUDIO_LOG_ERROR("stream init failed");
         goto error_exit;
     }
-#ifdef USE_UCM
-    if (AUDIO_IS_ERROR((ret = _audio_ucm_init(ah)))) {
-        AUDIO_LOG_ERROR("ucm init failed");
-        goto error_exit;
-    }
-#endif
     if (AUDIO_IS_ERROR((ret = _audio_util_init(ah)))) {
         AUDIO_LOG_ERROR("util init failed");
         goto error_exit;
@@ -101,7 +95,6 @@ audio_return_t audio_deinit(void *audio_handle)
 
     _audio_device_deinit(ah);
     _audio_volume_deinit(ah);
-    _audio_ucm_deinit(ah);
     _audio_util_deinit(ah);
     free(ah);
     ah = NULL;
