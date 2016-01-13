@@ -46,10 +46,6 @@ static device_type_t inDeviceTypes[] = {
     { 0, 0 },
 };
 
-static const char* mode_to_verb_str[] = {
-    AUDIO_USE_CASE_VERB_HIFI,
-};
-
 static uint32_t convert_device_string_to_enum(const char* device_str, uint32_t direction)
 {
     uint32_t device = 0;
@@ -79,7 +75,7 @@ static uint32_t convert_device_string_to_enum(const char* device_str, uint32_t d
     return device;
 }
 
-static audio_return_t set_devices(audio_hal_t *ah, const char *verb, device_info_t *devices, uint32_t num_of_devices)
+static audio_return_t set_devices(audio_hal_t *ah, device_info_t *devices, uint32_t num_of_devices)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     uint32_t new_device = 0;
@@ -140,12 +136,6 @@ static audio_return_t set_devices(audio_hal_t *ah, const char *verb, device_info
         return AUDIO_ERR_PARAMETER;
     }
 
-#ifdef USE_UCM
-    audio_ret = _audio_ucm_set_devices(ah, verb, active_devices);
-    if (audio_ret)
-        AUDIO_LOG_ERROR("Failed to set device: error = %d", audio_ret);
-#endif
-
     return audio_ret;
 }
 
@@ -157,7 +147,6 @@ audio_return_t _audio_device_init(audio_hal_t *ah)
     ah->device.active_out = 0x0;
     ah->device.pcm_in = NULL;
     ah->device.pcm_out = NULL;
-    ah->device.mode = VERB_NORMAL;
     pthread_mutex_init(&ah->device.pcm_lock, NULL);
     ah->device.pcm_count = 0;
 
@@ -175,43 +164,19 @@ static audio_return_t _do_route_ap_playback_capture(audio_hal_t *ah, audio_route
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     device_info_t *devices = NULL;
-    const char *verb = mode_to_verb_str[VERB_NORMAL];
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(route_info, AUDIO_ERR_PARAMETER);
 
     devices = route_info->device_infos;
 
-    /* To Do: Set modifiers */
-    /* int mod_idx = 0; */
-    /* const char *modifiers[MAX_MODIFIERS] = {NULL,}; */
-
     AUDIO_LOG_INFO("do_route_ap_playback_capture++ ");
 
-    audio_ret = set_devices(ah, verb, devices, route_info->num_of_devices);
+    audio_ret = set_devices(ah, devices, route_info->num_of_devices);
     if (audio_ret) {
         AUDIO_LOG_ERROR("Failed to set devices: error = 0x%x", audio_ret);
         return audio_ret;
     }
-    ah->device.mode = VERB_NORMAL;
-
-    /* To Do: Set modifiers */
-    /*
-    if (!strncmp("voice_recognition", route_info->role, MAX_NAME_LEN)) {
-        modifiers[mod_idx++] = AUDIO_USE_CASE_MODIFIER_VOICESEARCH;
-    } else if ((!strncmp("alarm", route_info->role, MAX_NAME_LEN))||(!strncmp("notifiication", route_info->role, MAX_NAME_LEN))) {
-        if (ah->device.active_out &= AUDIO_DEVICE_OUT_JACK)
-            modifiers[mod_idx++] = AUDIO_USE_CASE_MODIFIER_DUAL_MEDIA;
-        else
-            modifiers[mod_idx++] = AUDIO_USE_CASE_MODIFIER_MEDIA;
-    } else {
-        if (ah->device.active_in)
-            modifiers[mod_idx++] = AUDIO_USE_CASE_MODIFIER_CAMCORDING;
-        else
-            modifiers[mod_idx++] = AUDIO_USE_CASE_MODIFIER_MEDIA;
-    }
-    audio_ret = _audio_ucm_set_modifiers (ah, verb, modifiers);
-    */
 
     return audio_ret;
 }
@@ -219,22 +184,18 @@ static audio_return_t _do_route_ap_playback_capture(audio_hal_t *ah, audio_route
 static audio_return_t _do_route_voip(audio_hal_t *ah, device_info_t *devices, int32_t num_of_devices)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
-    const char *verb = mode_to_verb_str[VERB_NORMAL];
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(devices, AUDIO_ERR_PARAMETER);
 
     AUDIO_LOG_INFO("do_route_voip++");
 
-    audio_ret = set_devices(ah, verb, devices, num_of_devices);
+    audio_ret = set_devices(ah, devices, num_of_devices);
     if (audio_ret) {
         AUDIO_LOG_ERROR("Failed to set devices: error = 0x%x", audio_ret);
         return audio_ret;
     }
-    /* FIXME. If necessary, set VERB_VOIP */
-    ah->device.mode = VERB_NORMAL;
 
-    /* TO DO: Set modifiers */
     return audio_ret;
 }
 
@@ -243,10 +204,6 @@ static audio_return_t _do_route_reset(audio_hal_t *ah, uint32_t direction)
     audio_return_t audio_ret = AUDIO_RET_OK;
     const char *active_devices[MAX_DEVICES] = {NULL,};
     int i = 0, dev_idx = 0;
-
-    /* FIXME: If you need to reset, set verb inactive */
-    /* const char *verb = NULL; */
-    /* verb = AUDIO_USE_CASE_VERB_INACTIVE; */
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
 
@@ -280,12 +237,6 @@ static audio_return_t _do_route_reset(audio_hal_t *ah, uint32_t direction)
         AUDIO_LOG_DEBUG("active device is NULL, no need to update.");
         return AUDIO_RET_OK;
     }
-
-#ifdef USE_UCM
-    audio_ret = _audio_ucm_set_devices(ah, mode_to_verb_str[ah->device.mode], active_devices);
-    if (audio_ret)
-        AUDIO_LOG_ERROR("Failed to set device: error = %d", audio_ret);
-#endif
 
     return audio_ret;
 }
