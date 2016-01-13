@@ -120,16 +120,6 @@ typedef struct device_type {
     const char *name;
 } device_type_t;
 
-/* Verbs */
-#define AUDIO_USE_CASE_VERB_INACTIVE                "Inactive"
-#define AUDIO_USE_CASE_VERB_HIFI                    "HiFi"
-
-/* Modifiers */
-#define AUDIO_USE_CASE_MODIFIER_VOICESEARCH              "VoiceSearch"
-#define AUDIO_USE_CASE_MODIFIER_CAMCORDING               "Camcording"
-#define AUDIO_USE_CASE_MODIFIER_MEDIA                    "Media"
-#define AUDIO_USE_CASE_MODIFIER_DUAL_MEDIA               "DualMedia"
-
 #define streq !strcmp
 #define strneq strcmp
 
@@ -190,10 +180,6 @@ typedef struct audio_device_info {
     };
 } audio_device_info_t;
 
-typedef enum audio_route_mode {
-    VERB_NORMAL,
-} audio_route_mode_t;
-
 typedef struct audio_hal_device {
     uint32_t active_in;
     uint32_t active_out;
@@ -201,7 +187,6 @@ typedef struct audio_hal_device {
     snd_pcm_t *pcm_out;
     pthread_mutex_t pcm_lock;
     uint32_t pcm_count;
-    audio_route_mode_t mode;
 } audio_hal_device_t;
 
 /* Stream */
@@ -251,10 +236,6 @@ typedef struct audio_hal_volume {
     audio_volume_value_table_t *volume_value_table;
 } audio_hal_volume_t;
 
-typedef struct audio_hal_ucm {
-    snd_use_case_mgr_t* uc_mgr;
-} audio_hal_ucm_t;
-
 typedef struct audio_hal_mixer {
     snd_mixer_t *mixer;
     pthread_mutex_t mutex;
@@ -288,7 +269,6 @@ typedef enum audio_sample_format {
 typedef struct audio_hal {
     audio_hal_device_t device;
     audio_hal_volume_t volume;
-    audio_hal_ucm_t ucm;
     audio_hal_mixer_t mixer;
 } audio_hal_t;
 
@@ -308,19 +288,6 @@ audio_return_t _audio_volume_deinit(audio_hal_t *ah);
 
 audio_return_t _audio_device_init(audio_hal_t *ah);
 audio_return_t _audio_device_deinit(audio_hal_t *ah);
-
-#ifdef USE_UCM
-audio_return_t _audio_ucm_init(audio_hal_t *ah);
-audio_return_t _audio_ucm_deinit(audio_hal_t *ah);
-void _audio_ucm_get_device_name(audio_hal_t *ah, const char *use_case, audio_direction_t direction, const char **value);
-#define _audio_ucm_update_use_case _audio_ucm_set_use_case
-audio_return_t _audio_ucm_set_use_case(audio_hal_t *ah, const char *verb, const char *devices[], const char *modifiers[]);
-audio_return_t _audio_ucm_set_devices(audio_hal_t *ah, const char *verb, const char *devices[]);
-audio_return_t _audio_ucm_set_modifiers(audio_hal_t *ah, const char *verb, const char *modifiers[]);
-int _audio_ucm_fill_device_info_list(audio_hal_t *ah, audio_device_info_t *device_info_list, const char *verb);
-audio_return_t _audio_ucm_get_verb(audio_hal_t *ah, const char **value);
-audio_return_t _audio_ucm_reset_use_case(audio_hal_t *ah);
-#endif
 
 audio_return_t _audio_util_init(audio_hal_t *ah);
 audio_return_t _audio_util_deinit(audio_hal_t *ah);
