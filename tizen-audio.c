@@ -101,7 +101,9 @@ audio_return_t audio_deinit(void *audio_handle)
 
     _audio_device_deinit(ah);
     _audio_volume_deinit(ah);
+#ifdef USE_UCM
     _audio_ucm_deinit(ah);
+#endif
     _audio_util_deinit(ah);
     free(ah);
     ah = NULL;
