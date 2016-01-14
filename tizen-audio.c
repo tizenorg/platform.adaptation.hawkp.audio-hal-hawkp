@@ -29,7 +29,6 @@ static const char* AUDIO_LATENCY_MID  = "mid";
 static const char* AUDIO_LATENCY_HIGH = "high";
 static const char* AUDIO_LATENCY_VOIP = "voip";
 
-
 static audio_return_t _audio_mixer_init(audio_hal_t *ah)
 {
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
@@ -46,6 +45,18 @@ static audio_return_t _audio_mixer_init(audio_hal_t *ah)
         AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_AMP_MUTE, AMIXER_AMP_MUTE_DEFAULT);
 
     return AUDIO_RET_OK;
+}
+
+audio_return_t audio_set_message_cb(void *audio_handle, message_cb callback, void *user_data)
+{
+    audio_return_t ret = AUDIO_RET_OK;
+
+    AUDIO_RETURN_VAL_IF_FAIL(audio_handle, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(callback, AUDIO_ERR_PARAMETER);
+
+    ret = _audio_comm_set_message_callback((audio_hal_t *)audio_handle, callback, user_data);
+
+    return ret;
 }
 
 audio_return_t audio_init(void **audio_handle)
@@ -76,6 +87,10 @@ audio_return_t audio_init(void **audio_handle)
         AUDIO_LOG_ERROR("mixer init failed");
         goto error_exit;
     }
+    if (AUDIO_IS_ERROR((ret = _audio_comm_init(ah)))) {
+        AUDIO_LOG_ERROR("comm init failed");
+        goto error_exit;
+    }
 
     *audio_handle = (void *)ah;
     return AUDIO_RET_OK;
@@ -96,6 +111,7 @@ audio_return_t audio_deinit(void *audio_handle)
     _audio_device_deinit(ah);
     _audio_volume_deinit(ah);
     _audio_util_deinit(ah);
+    _audio_comm_deinit(ah);
     free(ah);
     ah = NULL;
 
