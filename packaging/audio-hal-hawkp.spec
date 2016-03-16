@@ -1,6 +1,6 @@
 Name:       audio-hal-hawkp
 Summary:    TIZEN Audio HAL for Hawkp
-Version:    0.1.10
+Version:    0.1.11
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0
@@ -20,7 +20,7 @@ TIZEN Audio HAL for Hawkp
 %setup -q -n %{name}-%{version}
 
 %build
-export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE -DSYSCONFDIR=\\\"%{_sysconfdir}\\\""
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
