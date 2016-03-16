@@ -20,7 +20,7 @@ TIZEN Audio HAL for Hawkp
 %setup -q -n %{name}-%{version}
 
 %build
-export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE -DSYSCONFDIR=\\\"%{_sysconfdir}\\\""
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
