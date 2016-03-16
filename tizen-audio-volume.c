@@ -413,7 +413,7 @@ audio_return_t audio_get_volume_mute(void *audio_handle, audio_volume_info_t *in
 
     /* TODO. Not implemented for other than master type */
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if ((audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
+        if ((audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, (int*) mute)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("get master mute with mixer failed");
         }
     }
