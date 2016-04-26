@@ -1,6 +1,6 @@
 Name:       audio-hal-hawkp
 Summary:    TIZEN Audio HAL for Hawkp
-Version:    0.1.11
+Version:    0.1.12
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0

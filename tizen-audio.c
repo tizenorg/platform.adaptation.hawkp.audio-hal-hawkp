@@ -47,14 +47,28 @@ static audio_return_t _audio_mixer_init(audio_hal_t *ah)
     return AUDIO_RET_OK;
 }
 
-audio_return_t audio_set_message_cb(void *audio_handle, message_cb callback, void *user_data)
+audio_return_t audio_add_message_cb(void *audio_handle, message_cb callback, void *user_data)
 {
     audio_return_t ret = AUDIO_RET_OK;
 
     AUDIO_RETURN_VAL_IF_FAIL(audio_handle, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(callback, AUDIO_ERR_PARAMETER);
 
+    /* NOTE: Management of several callbacks could be implemented.
+             But we do not care of it for now.*/
     ret = _audio_comm_set_message_callback((audio_hal_t *)audio_handle, callback, user_data);
+
+    return ret;
+}
+
+audio_return_t audio_remove_message_cb(void *audio_handle, message_cb callback)
+{
+    audio_return_t ret = AUDIO_RET_OK;
+
+    AUDIO_RETURN_VAL_IF_FAIL(audio_handle, AUDIO_ERR_PARAMETER);
+    AUDIO_RETURN_VAL_IF_FAIL(callback, AUDIO_ERR_PARAMETER);
+
+    ret = _audio_comm_unset_message_callback((audio_hal_t *)audio_handle);
 
     return ret;
 }
