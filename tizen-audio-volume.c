@@ -1,7 +1,7 @@
 /*
  * audio-hal
  *
- * Copyright (c) 2000 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2015 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
 #include <iniparser.h>
 
 #include "tizen-audio-internal.h"
+#include "tizen-audio-impl.h"
 
 #define VOLUME_INI_DEFAULT_PATH     SYSCONFDIR"/multimedia/mmfw_audio_volume.ini" /* SYSCONFDIR is defined at .spec */
 #define VOLUME_INI_TEMP_PATH        "/opt/system/mmfw_audio_volume.ini"
@@ -300,6 +301,15 @@ audio_return_t _audio_volume_init(audio_hal_t *ah)
         return AUDIO_ERR_UNDEFINED;
     }
 
+    if (_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, AMIXER_SPK_OUT_GAIN_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_SPK_OUT_GAIN, AMIXER_SPK_OUT_GAIN_DEFAULT);
+    if (_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_MUTE, AMIXER_SPK_OUT_MUTE_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_SPK_OUT_MUTE, AMIXER_SPK_OUT_MUTE_DEFAULT);
+    if (_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_PCM_GAIN, AMIXER_PCM_GAIN_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_PCM_GAIN, AMIXER_PCM_GAIN_DEFAULT);
+    if (_mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, AMIXER_AMP_MUTE_DEFAULT) != AUDIO_RET_OK)
+        AUDIO_LOG_ERROR("[Set Mixer] %s -> %d failed", AMIXER_AMP_MUTE, AMIXER_AMP_MUTE_DEFAULT);
+
     return audio_ret;
 }
 
@@ -394,7 +404,7 @@ audio_return_t audio_set_volume_level(void *audio_handle, audio_volume_info_t *i
     /* set mixer related to H/W volume if needed */
 
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if ((audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, level)) != AUDIO_RET_OK) {
+        if ((audio_ret = _mixer_control_set_value(ah, ALSA_CARD0, AMIXER_SPK_OUT_GAIN, level)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("set master volume with mixer failed");
         }
     }
@@ -413,7 +423,7 @@ audio_return_t audio_get_volume_mute(void *audio_handle, audio_volume_info_t *in
 
     /* TODO. Not implemented for other than master type */
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if ((audio_ret = _audio_mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, (int*) mute)) != AUDIO_RET_OK) {
+        if ((audio_ret = _mixer_control_get_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, (int*) mute)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("get master mute with mixer failed");
         }
     }
@@ -431,7 +441,7 @@ audio_return_t audio_set_volume_mute(void *audio_handle, audio_volume_info_t *in
 
     /* TODO. Not implemented for other than master type */
     if (__get_volume_idx_by_string_type(info->type) == AUDIO_VOLUME_TYPE_MASTER) {
-        if ((audio_ret = _audio_mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
+        if ((audio_ret = _mixer_control_set_value(ah, ALSA_CARD1, AMIXER_AMP_MUTE, mute)) != AUDIO_RET_OK) {
             AUDIO_LOG_ERROR("set master mute with mixer failed");
         }
     }
